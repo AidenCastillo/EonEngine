@@ -31,7 +31,7 @@ target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC RESOURCES_PATH="${CMAK
 #target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC RESOURCES_PATH="./resources/") # Uncomment this line to setup the ASSETS_PATH macro to the final assets directory when you share the game
 
 
-target_sources("${CMAKE_PROJECT_NAME}" PRIVATE ${MY_SOURCES}  "src/controller/controller.cpp" "src/controller/controller.h" "src/debug/Debug.cpp" "src/debug/Debug.h" "src/core/IndexBuffer.cpp" "src/core/IndexBuffer.h" "src/core/Shader.cpp" "src/core/Shader.h" "src/core/Texture.cpp" "src/core/Texture.h" "src/core/VertexArray.cpp" "src/core/VertexArray.h" "src/core/VertexBuffer.cpp" "src/core/VertexBuffer.h" "src/core/VertexBufferLayout.h")
+target_sources("${CMAKE_PROJECT_NAME}" PRIVATE ${MY_SOURCES}  "src/controller/controller.cpp" "src/controller/controller.h" "src/debug/Debug.cpp" "src/debug/Debug.h" "src/core/IndexBuffer.cpp" "src/core/IndexBuffer.h"   "src/core/Texture.cpp" "src/core/Texture.h" "src/core/VertexArray.cpp" "src/core/VertexArray.h" "src/core/VertexBuffer.cpp" "src/core/VertexBuffer.h" "src/core/VertexBufferLayout.h" "src/core/demoShader.cpp" "src/core/demoShader.h" )
 
 
 if(MSVC) # If using the VS compiler...

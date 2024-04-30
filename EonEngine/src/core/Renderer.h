@@ -3,7 +3,7 @@
 #include <glad/glad.h>
 #include "VertexArray.h"
 #include "IndexBuffer.h"
-#include "Shader.h"
+#include "demoShader.h"
 #include <iostream>
 
 #define ASSERT(x) if (!(x)) __debugbreak();

@@ -13,7 +13,7 @@
 #include <imgui.h>
 
 #include "core/Texture.h"
-#include "core/Shader.h"
+#include "core/demoShader.h"
 #include "core/VertexBuffer.h"
 #include "core/IndexBuffer.h"
 #include "core/VertexArray.h"
@@ -29,7 +29,11 @@
 
 using namespace std;
 
-
+static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, GLFW_TRUE);
+}
 
 int main(void)
 {
@@ -52,6 +56,9 @@ int main(void)
 		return -1;
 	}
 
+	glfwSetKeyCallback(window, key_callback);
+
+
 	/* Make the window's context current */
 	glfwMakeContextCurrent(window);
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -59,106 +66,58 @@ int main(void)
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	}
+	glfwSwapInterval(1);
 
 	/* Enable debug output */
+	glEnable(GL_DEBUG_OUTPUT);
+	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 	glDebugMessageCallback(glDebugOutput, nullptr);
+	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
 
-	glEnable(GL_DEPTH_TEST);
+	// load shaders
+	Shader s;
+	s.loadShaderProgramFromFile(RESOURCES_PATH "second.vertex", RESOURCES_PATH "second.fragment");
+	s.bind();
 
-	
+	float vertices[] = {
+	-0.5f, -0.5f, 0.0f,
+	 0.5f, -0.5f, 0.0f,
+	 0.0f,  0.5f, 0.0f
+	};
+
+	unsigned int VAO;
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+	unsigned int VBO;
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+
+
 	{
-
-		float positions[] = {
-				 -50.0f, -50.0f, 0.0f, 0.0f, // 0
-				 50.0f, -50.0f, 1.0f, 0.0f, // 1
-				 50.0f, 50.0f, 1.0f, 1.0f, // 2
-				 -50.0f, 50.0f, 0.0f, 1.0f // 3
-		};
-
-		unsigned int indices[] = {
-			0, 1, 2,
-			2, 3, 0
-		};
-
-		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-		GLCall(glEnable(GL_BLEND));
-
-		VertexArray va;
-		VertexBuffer vb(positions, 4 * 4 * sizeof(float));
-
-		VertexBufferLayout layout;
-		layout.Push<float>(2);
-		layout.Push<float>(2);
-		va.AddBuffer(vb, layout);
-
-		IndexBuffer ib(indices, 6);
-
-		// Create a projection matrix
-		// First 4 arguments are the bounds of the frustum
-		// Last 2 arguments are the near and far planes
-		// The near and far planes are the distance from the camera to the near and far planes
-		// Anything outside of the frustum will not be rendered
-		// Anything between the near and far planes will be rendered
-		glm::mat4 proj = glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f);
-		glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
-
-		Shader shader("E:/amc-m/Documents/code/Graphics/EonEngine/EonEngine/res/shaders/main");
-		shader.Bind();
-		shader.SetUniform4f("u_Color", 0.8f, 0.3f, 0.8f, 1.0f);
-
-		Texture texture("E:/amc-m/Documents/code/Graphics/EonEngine/EonEngine/res/textures/ChernoLogo.png");
-		texture.Bind();
-		shader.SetUniform1i("u_Texture", 0);
-
-		va.UnBind();
-		vb.UnBind();
-		ib.UnBind();
-		shader.Unbind();
-
-
-		Renderer renderer;
-
-		IMGUI_CHECKVERSION();
-		ImGui::CreateContext();
-		ImGui_ImplGlfw_InitForOpenGL(window, true);
-		ImGui_ImplOpenGL3_Init("#version 130");
-		ImGui::StyleColorsDark();
-
-		/* Loop until the user closes the window */
 		while (!glfwWindowShouldClose(window))
 		{
-			/* Render here */
-			renderer.Clear();
+			int width = 0, height = 0;
 
-			ImGui_ImplOpenGL3_NewFrame();
-			ImGui_ImplGlfw_NewFrame();
-			ImGui::NewFrame();
-			{
-				ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-			}
+			glfwGetFramebufferSize(window, &width, &height);
+			glViewport(0, 0, width, height);
+			glClear(GL_COLOR_BUFFER_BIT);
 
-			{
-				glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(200, 200, 0));
-				glm::mat4 mvp = proj * view * model;
-				shader.SetUniformMat4f("u_MVP", mvp);
-				shader.Bind();
+			// render
+			// ------
+			s.bind();
+			// render the triangle
+			glBindVertexArray(VAO);
+			glDrawArrays(GL_TRIANGLES, 0, 3);
 
-				renderer.Draw(va, ib, shader);
-			}
-
-			ImGui::Render();
-			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-			/* Swap front and back buffers */
 			glfwSwapBuffers(window);
-
-			/* Poll for and process events */
 			glfwPollEvents();
 		}
 	}
-
-	ImGui_ImplOpenGL3_Shutdown();
-	ImGui_ImplGlfw_Shutdown();
 
 	glfwTerminate();
 
