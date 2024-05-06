@@ -26,7 +26,7 @@
 #include <backends/imgui_impl_opengl3.h>
 #include "core/Renderer.h"
 #include "scenes/Triangle.h"
-
+#include "scenes/FPSGame.h"
 
 using namespace std;
 
@@ -59,7 +59,6 @@ int main(void)
 
 	glfwSetKeyCallback(window, key_callback);
 
-
 	/* Make the window's context current */
 	glfwMakeContextCurrent(window);
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -75,8 +74,31 @@ int main(void)
 	glDebugMessageCallback(glDebugOutput, nullptr);
 	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
 
-	
-	runScene(window);
+
+	// Setup FPSGame
+
+	Renderer renderer;
+	FPSGame game;
+
+	{
+		/* Loop until the user closes the window */
+		while (!glfwWindowShouldClose(window))
+		{
+			/* Render here */
+			renderer.Clear();
+
+			game.Update(0.0f);
+			game.Render();
+
+			/* Swap front and back buffers */
+			glfwSwapBuffers(window);
+
+			/* Poll for and process events */
+			glfwPollEvents();
+		}
+	}
+
+	glfwTerminate();
 
 	return 0;
 }

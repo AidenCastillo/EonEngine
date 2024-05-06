@@ -1,6 +1,8 @@
 #pragma once
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <iostream>
+#include <glm/glm.hpp>
 
 class Controller
 {
@@ -11,5 +13,5 @@ public:
 	Controller();
 	~Controller();
 
-	void ProcessInput(GLFWwindow* m_Window);
+	void ProcessInput(GLFWwindow* m_Window, glm::vec3* matrix);
 };

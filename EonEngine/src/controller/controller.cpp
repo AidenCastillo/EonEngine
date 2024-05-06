@@ -14,7 +14,7 @@ Controller::~Controller()
 
 }
 
-void Controller::ProcessInput(GLFWwindow* m_Window)
+void Controller::ProcessInput(GLFWwindow* m_Window, glm::vec3* matrix)
 {
 	if (glfwGetKey(m_Window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(m_Window, true);
@@ -30,18 +30,22 @@ void Controller::ProcessInput(GLFWwindow* m_Window)
 	if (glfwGetKey(m_Window, GLFW_KEY_UP) == GLFW_PRESS)
 	{
 		std::cout << "UP" << std::endl;
+		matrix->y += 0.1f;
 	}
 	if (glfwGetKey(m_Window, GLFW_KEY_DOWN) == GLFW_PRESS)
 	{
 		std::cout << "DOWN" << std::endl;
+		matrix->y -= 0.1f;
 	}
 	if (glfwGetKey(m_Window, GLFW_KEY_LEFT) == GLFW_PRESS)
 	{
 		std::cout << "LEFT" << std::endl;
+		matrix->x -= 0.1f;
 	}
 	if (glfwGetKey(m_Window, GLFW_KEY_RIGHT) == GLFW_PRESS)
 	{
 		std::cout << "RIGHT" << std::endl;
+		matrix->x += 0.1f;
 	}
 
 }

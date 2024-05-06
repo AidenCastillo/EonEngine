@@ -17,9 +17,14 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
+#include "../controller/controller.h"
+#include "Triangle.h"
+
 
 
 using namespace std;
+
+
 
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -28,46 +33,83 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
 
+
+
 void runScene(GLFWwindow* window) {
 	// load shaders
+
+	float vertices[] = {
+		-50.0f, -50.0f,
+		50.0f, -50.0f,
+		50.0f, 50.0f,
+		-50.0f, 50.0f
+	};
+	
+	unsigned int indices[] = {
+		0, 1, 2,
+		2, 3, 0
+	};
+
+	VertexArray va;
+	VertexBuffer vb(vertices, 4 * 2 * sizeof(float));
+
+	VertexBufferLayout layout;
+	layout.Push<float>(2);
+	va.AddBuffer(vb, layout);
+
+	IndexBuffer ib(indices, 6);
+
+	glm::mat4 proj = glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 10.0f);
+
 	Shader s;
 	s.loadShaderProgramFromFile(RESOURCES_PATH "second.vertex", RESOURCES_PATH "second.fragment");
 	s.bind();
 
-	float vertices[] = {
-	-0.5f, -0.5f, 0.0f,
-	 0.5f, -0.5f, 0.0f,
-	 0.0f,  0.5f, 0.0f
-	};
+	// create gui
+	ImGui::CreateContext();
+	ImGui_ImplOpenGL3_Init("#version 130");
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
 
-	unsigned int VAO;
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
-	unsigned int VBO;
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glm::vec3 translationA(0.0f, 0.0f, 0.0f);
+	glm::vec3 translationB(0.0f, 0.0f, 0.0f);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
+	glm::vec3* translation = &translationA;
 
-
+	Renderer renderer;
+	Controller controller;
 
 	{
 		while (!glfwWindowShouldClose(window))
 		{
-			int width = 0, height = 0;
+			renderer.Clear();
 
-			glfwGetFramebufferSize(window, &width, &height);
-			glViewport(0, 0, width, height);
-			glClear(GL_COLOR_BUFFER_BIT);
+			ImGui_ImplOpenGL3_NewFrame();
+			ImGui_ImplGlfw_NewFrame();
+			ImGui::NewFrame();
 
-			// render
-			// ------
-			s.bind();
+			controller.ProcessInput(window, translation);
+
+
 			// render the triangle
-			glBindVertexArray(VAO);
-			glDrawArrays(GL_TRIANGLES, 0, 3);
+			{
+				glm::mat4 model = glm::translate(glm::mat4(1.0f), translationA);
+				glm::mat4 mvp = proj * model;
+
+				s.SetUniform4f("u_MVP", mvp);
+				s.bind();
+				renderer.Draw(va, ib, s);
+
+			}
+			// render gui
+			{
+				ImGui::SliderFloat3("Translation A", &translationA.x, 0.0f, 960.0f);
+				ImGui::SliderFloat3("Translation B", &translationB.x, 0.0f, 960.0f);
+				ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			}
+			
+			ImGui::Render();
+			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
 
 			glfwSwapBuffers(window);
 			glfwPollEvents();
@@ -76,4 +118,3 @@ void runScene(GLFWwindow* window) {
 
 	glfwTerminate();
 }
-

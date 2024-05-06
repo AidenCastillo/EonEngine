@@ -289,6 +289,11 @@ void Shader::clear()
 	id = 0;
 }
 
+void Shader::SetUniform4f(const std::string& name, const glm::mat4& matrix)
+{
+	glUniformMatrix4fv(getUniform(name.c_str()), 1, GL_FALSE, &matrix[0][0]);
+}
+
 GLint Shader::getUniform(const char *name)
 {
 	return ::getUniform(this->id, name);

@@ -1,5 +1,7 @@
 #pragma once
 #include <glad/glad.h>
+#include <string>
+#include <glm/glm.hpp>
 
 struct Shader
 {
@@ -16,6 +18,9 @@ struct Shader
 	void bind();
 
 	void clear();
+
+	void SetUniform4f(const std::string& name, const glm::mat4& matrix);
+
 
 	GLint getUniform(const char *name);
 };
